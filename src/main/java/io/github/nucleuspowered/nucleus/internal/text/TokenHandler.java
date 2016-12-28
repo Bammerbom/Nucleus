@@ -6,7 +6,6 @@ package io.github.nucleuspowered.nucleus.internal.text;
 
 import com.google.common.base.Preconditions;
 import io.github.nucleuspowered.nucleus.NucleusPlugin;
-import io.github.nucleuspowered.nucleus.PluginInfo;
 import io.github.nucleuspowered.nucleus.Util;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.entity.living.player.Player;
@@ -37,11 +36,7 @@ public class TokenHandler {
     }
 
     public final Optional<Text> getTextFromToken(String token, CommandSource source) {
-        token = token.toLowerCase();
-        if (token.startsWith("{{") && token.endsWith("}}")) {
-            token = token.substring(2, token.length() - 2);
-        }
-
+        token = token.toLowerCase().trim().replace("{{", "").replace("}}", "");
         boolean addSpace = token.endsWith(":s");
         if (addSpace) {
             token = token.substring(0, token.length() - 2);
@@ -60,7 +55,7 @@ public class TokenHandler {
                 return getTextFromOption(source, token.substring(2), addSpace);
             } else {
                 // Standard.
-                return getTextFromPluginToken(PluginInfo.ID, token, source, addSpace);
+                return getTextFromPluginToken(plugin.getPluginContainer().getId(), token, source, addSpace);
             }
         } catch (Exception e) {
             if (plugin.isDebugMode()) {

@@ -20,18 +20,15 @@ import org.spongepowered.api.text.format.TextStyle;
 import org.spongepowered.api.text.format.TextStyles;
 import org.spongepowered.api.text.serializer.TextSerializers;
 
+import javax.annotation.Nullable;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
 
 public class ChatUtil {
 
@@ -40,8 +37,8 @@ public class ChatUtil {
         Pattern.compile("(?<first>(^|\\s))(?<colour>(&[0-9a-flmnork])+)?(?<url>(http(s)?://)?([A-Za-z0-9]+\\.)+[A-Za-z0-9]{2,}\\S*)",
         Pattern.CASE_INSENSITIVE);
 
-    private final Pattern tokenParser = Pattern.compile("^\\{\\{(?<capture>[a-zA-Z:]+)\\}\\}", Pattern.CASE_INSENSITIVE);
-    private final Pattern tokenParserLookAhead = Pattern.compile("(?=\\{\\{(?<capture>[a-zA-Z:]+)\\}\\})", Pattern.CASE_INSENSITIVE);
+    private final Pattern tokenParser = Pattern.compile("^\\{\\{(?<capture>[a-zA-Z:]+)}}", Pattern.CASE_INSENSITIVE);
+    private final Pattern tokenParserLookAhead = Pattern.compile("(?=\\{\\{(?<capture>[a-zA-Z:]+)}})", Pattern.CASE_INSENSITIVE);
 
     private final Pattern enhancedUrlParser =
             Pattern.compile("(?<first>(^|\\s))(?<colour>(&[0-9a-flmnork])+)?"
@@ -56,22 +53,6 @@ public class ChatUtil {
 
     public ChatUtil(NucleusPlugin plugin) {
         this.plugin = plugin;
-    }
-
-    @SafeVarargs
-    @Deprecated
-    public final List<Text> getMessageFromTemplate(List<String> templates, CommandSource cs, final boolean trimTrailingSpace,
-        Map<String, Function<CommandSource, Optional<Text>>>... tokensArray) {
-
-        if (tokensArray.length == 0) {
-            return getMessageFromTemplate(templates, cs, trimTrailingSpace, Maps.newHashMap());
-        } else if (tokensArray.length == 1) {
-            return getMessageFromTemplate(templates, cs, trimTrailingSpace, tokensArray[0]);
-        } else {
-            return getMessageFromTemplate(templates, cs, trimTrailingSpace, new HashMap<String, Function<CommandSource, Optional<Text>>>() {{
-                Arrays.stream(tokensArray).forEach(this::putAll);
-            }});
-        }
     }
 
     public final Text getMessageFromTemplate(String templates, CommandSource cs, final boolean trimTrailingSpace) {
@@ -96,31 +77,11 @@ public class ChatUtil {
             boolean trimNext = trimTrailingSpace;
 
             Text.Builder tb = Text.builder();
-
-            String[] split = tokenParserLookAhead.split(template);
-            if (split.length == 1) {
-                texts.add(TextSerializers.FORMATTING_CODE.deserialize(template));
-                return;
-            }
-
             String[] items = tokenParserLookAhead.split(template);
             Matcher tokenCheck = tokenParser.matcher("");
             for (String textElement : items) {
                 if (tokenCheck.reset(textElement).find(0)) {
-
-                    // You might be wondering what this next line is all about. I'd imagine you'd gather that the replaceAll section
-                    // does exactly what you think it does, which is remove the token from the text element. And you'd be right to think that.
-                    // However, you may be wondering why I've also put a replace within the group. It turns out that in order to account for
-                    // the "intricacies" of Regex where normally {x,y} indicates a repetition, it turns out that the engine doesn't look for
-                    // that pattern, but instead just cares that we've started with a "{". So, we need to escape that {, so \{ should work right?
-                    //
-                    // If you thought it should work, you forgot you're using Java and that nothing is as simple as it seems.
-                    //
-                    // It turns out that this sadly isn't the case. We actually want the literal "\{", not an escaped "{", so we need to escape
-                    // the escape character - so we need to do "\\{". We then stick that into our replaceAll and, just like that, it works!
-                    //
-                    // Hooray! Time to remove some characters from the beginning of the string.
-                    textElement = textElement.replaceAll(tokenCheck.group().replace("{", "\\{"), "");
+                    textElement = textElement.replace(tokenCheck.group(), "");
                     String tokenName = tokenCheck.group("capture");
 
                     // Token processing here.
