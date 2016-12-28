@@ -5,8 +5,8 @@
 package io.github.nucleuspowered.nucleus.modules.misc.listeners;
 
 import io.github.nucleuspowered.nucleus.Nucleus;
-import io.github.nucleuspowered.nucleus.internal.ListenerBase;
 import io.github.nucleuspowered.nucleus.internal.annotations.ConditionalListener;
+import io.github.nucleuspowered.nucleus.internal.listeners.ListenerBase;
 import io.github.nucleuspowered.nucleus.modules.misc.MiscModule;
 import io.github.nucleuspowered.nucleus.modules.misc.commands.GodCommand;
 import io.github.nucleuspowered.nucleus.modules.misc.config.MiscConfigAdapter;

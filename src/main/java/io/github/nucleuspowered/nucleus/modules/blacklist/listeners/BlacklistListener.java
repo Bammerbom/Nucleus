@@ -10,8 +10,8 @@ import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.Util;
 import io.github.nucleuspowered.nucleus.configurate.datatypes.item.BlacklistNode;
 import io.github.nucleuspowered.nucleus.dataservices.ItemDataService;
-import io.github.nucleuspowered.nucleus.internal.ListenerBase;
 import io.github.nucleuspowered.nucleus.internal.PermissionRegistry;
+import io.github.nucleuspowered.nucleus.internal.listeners.ListenerBase;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
 import io.github.nucleuspowered.nucleus.modules.blacklist.config.BlacklistConfigAdapter;
@@ -27,35 +27,37 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
 import org.spongepowered.api.event.block.InteractBlockEvent;
+import org.spongepowered.api.event.filter.Getter;
 import org.spongepowered.api.event.filter.cause.Root;
 import org.spongepowered.api.event.filter.type.Include;
 import org.spongepowered.api.event.item.inventory.ChangeInventoryEvent;
+import org.spongepowered.api.event.item.inventory.ClickInventoryEvent;
 import org.spongepowered.api.event.item.inventory.DropItemEvent;
 import org.spongepowered.api.event.item.inventory.UseItemStackEvent;
 import org.spongepowered.api.item.ItemType;
+import org.spongepowered.api.item.inventory.Carrier;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
+import org.spongepowered.api.item.inventory.type.CarriedInventory;
 import org.spongepowered.api.text.translation.Translatable;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-
-public class BlacklistListener extends ListenerBase {
+public class BlacklistListener extends ListenerBase.Reloadable {
 
     @Inject private ItemDataService itemDataService;
     @Inject private BlacklistConfigAdapter bca;
+
+    private boolean useEnabled = false;
+    private boolean possessEnabled = false;
+    private boolean environmentEnabled = false;
 
     private final BlacklistNode blacklistNode = new BlacklistNode();
     private final String confiscateRoot = "blacklist.confiscate";
@@ -72,6 +74,25 @@ public class BlacklistListener extends ListenerBase {
     private final Function<ItemStackSnapshot, CatalogType> itemId = ItemStackSnapshot::getType;
 
     private final Map<UUID, Instant> messageCache = Maps.newHashMap();
+
+    @Listener
+    public void onPlayerOpenInventory(ClickInventoryEvent.Open event,
+          @Root Player player,
+          @Getter("getTargetInventory") CarriedInventory<? extends Carrier> carriedInventory) {
+        if (player.hasPermission(bypass) || player.hasPermission(possess)) {
+            return;
+        }
+
+        Map<String, BlacklistNode> map = itemDataService.getAllBlacklistedItems();
+        Optional<? extends Carrier> optionalCarrier = carriedInventory.getCarrier();
+        if (optionalCarrier.isPresent() && player.equals(optionalCarrier.get())) {
+            carriedInventory.slots().forEach(x -> x.peek().ifPresent(y -> {
+                if (map.getOrDefault(y.getItem().getId(), blacklistNode).isInventory()) {
+                    x.clear();
+                }
+            }));
+        }
+    }
 
     @Listener
     public void onPlayerChangeItem(ChangeInventoryEvent event, @Root Player player) {
@@ -209,5 +230,10 @@ public class BlacklistListener extends ListenerBase {
         if (itemDataService.getDataForItem(item.getItem().getId()).getBlacklist().isInventory()) {
             player.setItemInHand(type, null);
         }
+    }
+
+    @Override
+    public void onReload() throws Exception {
+
     }
 }

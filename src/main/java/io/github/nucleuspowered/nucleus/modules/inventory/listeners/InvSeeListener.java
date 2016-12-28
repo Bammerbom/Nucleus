@@ -5,7 +5,7 @@
 package io.github.nucleuspowered.nucleus.modules.inventory.listeners;
 
 import io.github.nucleuspowered.nucleus.internal.CommandPermissionHandler;
-import io.github.nucleuspowered.nucleus.internal.ListenerBase;
+import io.github.nucleuspowered.nucleus.internal.listeners.ListenerBase;
 import io.github.nucleuspowered.nucleus.modules.inventory.commands.InvSeeCommand;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;

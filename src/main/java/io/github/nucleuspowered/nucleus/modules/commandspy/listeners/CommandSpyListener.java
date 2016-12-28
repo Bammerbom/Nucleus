@@ -9,8 +9,8 @@ import io.github.nucleuspowered.nucleus.ChatUtil;
 import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.dataservices.loaders.UserDataManager;
 import io.github.nucleuspowered.nucleus.internal.CommandPermissionHandler;
-import io.github.nucleuspowered.nucleus.internal.ListenerBase;
 import io.github.nucleuspowered.nucleus.internal.annotations.ConditionalListener;
+import io.github.nucleuspowered.nucleus.internal.listeners.ListenerBase;
 import io.github.nucleuspowered.nucleus.modules.commandspy.CommandSpyModule;
 import io.github.nucleuspowered.nucleus.modules.commandspy.commands.CommandSpyCommand;
 import io.github.nucleuspowered.nucleus.modules.commandspy.config.CommandSpyConfig;
@@ -26,13 +26,12 @@ import org.spongepowered.api.text.Text;
 import uk.co.drnaylor.quickstart.exceptions.IncorrectAdapterTypeException;
 import uk.co.drnaylor.quickstart.exceptions.NoModuleException;
 
+import javax.inject.Inject;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-
-import javax.inject.Inject;
 
 @ConditionalListener(CommandSpyListener.Test.class)
 public class CommandSpyListener extends ListenerBase.Reloadable {

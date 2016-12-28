@@ -6,8 +6,8 @@ package io.github.nucleuspowered.nucleus.modules.protection.listeners;
 
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.Nucleus;
-import io.github.nucleuspowered.nucleus.internal.ListenerBase;
 import io.github.nucleuspowered.nucleus.internal.annotations.ConditionalListener;
+import io.github.nucleuspowered.nucleus.internal.listeners.ListenerBase;
 import io.github.nucleuspowered.nucleus.modules.protection.ProtectionModule;
 import io.github.nucleuspowered.nucleus.modules.protection.config.ProtectionConfigAdapter;
 import org.spongepowered.api.block.BlockTypes;

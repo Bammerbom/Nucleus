@@ -5,6 +5,7 @@
 package io.github.nucleuspowered.nucleus.internal.annotations;
 
 import io.github.nucleuspowered.nucleus.Nucleus;
+import org.spongepowered.api.event.Listener;
 
 import java.lang.annotation.*;
 import java.util.function.Predicate;
@@ -19,7 +20,7 @@ import java.util.function.Predicate;
  * </p>
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Documented
 public @interface ConditionalListener {
 
@@ -36,4 +37,12 @@ public @interface ConditionalListener {
      * be loaded.
      */
     Class<? extends Predicate<Nucleus>> value();
+
+    /**
+     * If this is annotated on a method, then this is the standard {@link Listener}
+     * that would be used to register the event listeener method.
+     *
+     * @return The {@link Listener}
+     */
+    Listener listener() default @Listener;
 }

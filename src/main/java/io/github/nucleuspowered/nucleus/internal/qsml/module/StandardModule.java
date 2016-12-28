@@ -11,7 +11,6 @@ import io.github.nucleuspowered.nucleus.api.data.seen.BasicSeenInformationProvid
 import io.github.nucleuspowered.nucleus.config.CommandsConfig;
 import io.github.nucleuspowered.nucleus.internal.CommandPermissionHandler;
 import io.github.nucleuspowered.nucleus.internal.InternalServiceManager;
-import io.github.nucleuspowered.nucleus.internal.ListenerBase;
 import io.github.nucleuspowered.nucleus.internal.MixinConfigProxy;
 import io.github.nucleuspowered.nucleus.internal.TaskBase;
 import io.github.nucleuspowered.nucleus.internal.annotations.ConditionalListener;
@@ -21,6 +20,7 @@ import io.github.nucleuspowered.nucleus.internal.annotations.SkipOnError;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.command.CommandBuilder;
 import io.github.nucleuspowered.nucleus.internal.docgen.DocGenCache;
+import io.github.nucleuspowered.nucleus.internal.listeners.ListenerBase;
 import io.github.nucleuspowered.nucleus.modules.playerinfo.handlers.SeenHandler;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.spongepowered.api.Sponge;
@@ -32,6 +32,7 @@ import uk.co.drnaylor.quickstart.Module;
 import uk.co.drnaylor.quickstart.annotations.ModuleData;
 import uk.co.drnaylor.quickstart.config.AbstractConfigAdapter;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Objects;
@@ -42,8 +43,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
 
 public abstract class StandardModule implements Module {
 
@@ -138,13 +137,17 @@ public abstract class StandardModule implements Module {
                 plugin.registerReloadable((ListenerBase.Reloadable)c);
             }
 
+            // Scan methods for @ConditionalListener annotations
             final ConditionalListener conditionalListener = c.getClass().getAnnotation(ConditionalListener.class);
+
             if (conditionalListener != null) {
                 // Add reloadable to load in the listener dynamically if required.
                 plugin.registerReloadable(() -> {
                     Sponge.getEventManager().unregisterListeners(c);
                     if (conditionalListener.value().newInstance().test(plugin)) {
                         Sponge.getEventManager().registerListeners(plugin, c);
+
+
                     }
                 });
 
